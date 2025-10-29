@@ -26,6 +26,7 @@
 
 	<ItemGroup>
 	  <Folder Include="Protos\" />
+	  <ProjectReference Include="..\BuildingBlocks.Messaging\BuildingBlocks.Messaging.csproj" />
 	  <Protobuf Include="Protos\marketdata.proto" GrpcServices="Server" />
 	</ItemGroup>
 

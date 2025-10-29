@@ -1,4 +1,6 @@
-﻿using MarketData.Service.Repositories;
+﻿using BuildingBlocks.Messaging.Events;
+using MarketData.Service.Events;
+using MarketData.Service.Repositories;
 
 namespace MarketData.Service.Services
 {
@@ -6,15 +8,17 @@ namespace MarketData.Service.Services
     {
         private readonly ILogger<PriceUpdateService> _logger;
         private readonly IMarketPriceRepository _repository;
+        private readonly IMarketPricesPublisher _marketPricesPublisher;
         private readonly Random _random = new();
 
         public PriceUpdateService(
             ILogger<PriceUpdateService> logger,
-            IMarketPriceRepository repository
-            ) // optional
+            IMarketPriceRepository repository,
+            IMarketPricesPublisher marketPricesPublisher)
         {
             _logger = logger;
             _repository = repository;
+            _marketPricesPublisher = marketPricesPublisher;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -25,7 +29,7 @@ namespace MarketData.Service.Services
             {
                 try
                 {
-                    var allPrices = await _repository.GetAllAsync(); // get all symbols
+                    var allPrices = await _repository.GetAllAsync();
 
                     foreach (var price in allPrices)
                     {
@@ -37,15 +41,22 @@ namespace MarketData.Service.Services
                         await _repository.UpdateAsync(price);
                     }
 
-
                     _logger.LogInformation("Prices updated at {Time}", DateTime.UtcNow);
+
+                    // ✅ Publish the updated prices to the message bus
+                    var priceDtos = allPrices
+                        .Select(p => new MarketPriceDto(p.Symbol, p.Price))
+                        .ToList();
+
+                    await _marketPricesPublisher.PublishAsync(priceDtos);
+
+                    _logger.LogInformation("Published {Count} price updates.", priceDtos.Count);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error updating prices");
+                    _logger.LogError(ex, "Error updating or publishing prices");
                 }
 
-                // Wait 30 seconds
                 await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
             }
         }

@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.14.36511.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarketData.Service", "MarketData.Service\MarketData.Service.csproj", "{A970C3E2-BC3F-48E3-8404-C420EFCB27A0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D70F75A2-516D-4996-ACFE-7536B6EAFAF6} = {D70F75A2-516D-4996-ACFE-7536B6EAFAF6}
+	EndProjectSection
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{81DDED9D-158B-E303-5F62-77A2896D2A5A}"
 EndProject
