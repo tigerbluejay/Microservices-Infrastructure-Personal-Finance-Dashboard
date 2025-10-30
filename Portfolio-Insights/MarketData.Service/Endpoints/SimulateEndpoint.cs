@@ -1,25 +1,24 @@
 ﻿using Carter;
 using Mapster;
-using MediatR;
 using MarketData.Service.Handlers;
+using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MarketData.Service.Endpoints
 {
-    public record SimulateRequest(); // empty request, since this endpoint doesn’t take input
-
     public record SimulateResponse(bool Success, DateTime Timestamp);
 
     public class SimulateEndpoint : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapPost("/api/marketdata/simulate", async (SimulateRequest request, ISender sender) =>
+            app.MapPost("/api/marketdata/simulate", async ([FromServices] ISender sender) =>
             {
-                var command = request.Adapt<SimulateCommand>(); // just like UpdateProductCommand
-                var result = await sender.Send(command);
-                var response = result.Adapt<SimulateResponse>();
+                // Send the command directly; no body required
+                var result = await sender.Send(new SimulateCommand());
 
+                var response = new SimulateResponse(result.Success, result.Timestamp);
                 return Results.Ok(response);
             })
             .WithName("SimulateMarketUpdate")

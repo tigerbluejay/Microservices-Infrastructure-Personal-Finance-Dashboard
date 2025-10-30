@@ -1,5 +1,4 @@
 using BuildingBlocks.Behaviors;
-using BuildingBlocks.Exceptions;
 using BuildingBlocks.Messaging.MassTransit;
 using Carter;
 using FluentValidation;
@@ -13,53 +12,63 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Very verbose logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.SetMinimumLevel(LogLevel.Trace);
 
-// Add services to the container
+// Add services
 builder.Services.AddCarter();
-
 var assembly = typeof(Program).Assembly;
 
 builder.Services.AddMediatR(config =>
 {
     config.RegisterServicesFromAssembly(assembly);
-    config.AddOpenBehavior(typeof(ValidationBehavior<,>)); // add validation behavior
-    config.AddOpenBehavior(typeof(LoggingBehavior<,>)); // add logging behavior
+    config.AddOpenBehavior(typeof(ValidationBehavior<,>));
+    config.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });
-builder.Services.AddValidatorsFromAssembly(assembly); // scans the assembly for validators and registers them
+builder.Services.AddValidatorsFromAssembly(assembly);
 builder.Services.AddGrpc();
 builder.Services.AddMessageBroker(builder.Configuration);
 builder.Services.AddSingleton<IMarketPriceRepository, InMemoryMarketPriceRepository>();
 builder.Services.AddScoped<IMarketPricesPublisher, MarketPricesPublisher>();
 builder.Services.Decorate<IMarketPriceRepository, CachedMarketPriceRepository>();
 builder.Services.AddDbContext<MarketDataContext>(options =>
-{
-    options.UseSqlite(builder.Configuration.GetConnectionString("Database"));
-});
+    options.UseSqlite(builder.Configuration.GetConnectionString("Database")));
 builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
-});
+    options.Configuration = builder.Configuration.GetConnectionString("Redis"));
 builder.Services.AddHealthChecks()
     .AddRedis(builder.Configuration.GetConnectionString("Redis")!);
 
-//if (builder.Environment.IsDevelopment())
-//    builder.Services.InitializeMartenWith<CatalogInitialData>(); // seed data
-
-builder.Services.AddExceptionHandler<CustomExceptionHandler>();
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Exception handling middleware for **detailed logging**
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Unhandled exception caught in middleware");
+
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsJsonAsync(new
+        {
+            error = ex.Message,
+            stackTrace = ex.StackTrace
+        });
+    }
+});
 
 app.UseHttpsRedirection();
-app.UseMigration();
+app.UseMigration(); // ensure DB migrations are applied
 app.MapGrpcService<MarketDataGrpcService>();
-app.UseExceptionHandler(options => { });
-app.MapHealthChecks("/health",
-    new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
-    {
-        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-    });
-
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+app.MapCarter();
 app.Run();
