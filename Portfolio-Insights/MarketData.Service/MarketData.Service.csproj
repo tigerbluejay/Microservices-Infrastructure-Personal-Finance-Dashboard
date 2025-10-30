@@ -26,11 +26,13 @@
 		<PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.10" />
 		<PackageReference Include="Scrutor" Version="4.2.2" />
+		<PackageReference Include="Carter" Version="8.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Folder Include="Protos\" />
 	  <ProjectReference Include="..\BuildingBlocks.Messaging\BuildingBlocks.Messaging.csproj" />
+	  <ProjectReference Include="..\BuildingBlocks\BuildingBlocks.csproj" />
 	  <Protobuf Include="Protos\marketdata.proto" GrpcServices="Server" />
 	</ItemGroup>
 
