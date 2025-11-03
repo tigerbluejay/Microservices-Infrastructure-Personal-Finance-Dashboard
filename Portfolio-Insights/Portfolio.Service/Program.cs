@@ -5,6 +5,8 @@ using Carter;
 using HealthChecks.UI.Client;
 using MarketData.Service;
 using Marten;
+using Portfolio.Service.Data;
+using Weasel.Core;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,9 +27,26 @@ builder.Services.AddMediatR(config =>
 // Data Services
 builder.Services.AddMarten(options =>
 {
+    // Connection string from appsettings.json
     options.Connection(builder.Configuration.GetConnectionString("Database")!);
-    // options.Schema.For<Portfolio>().Identity(x => x.Id);
-}).UseLightweightSessions();
+
+    // Auto-create schema objects (tables, indexes) if missing
+    options.AutoCreateSchemaObjects = AutoCreate.All;
+
+    // Create the database automatically if it doesn't exist
+    options.CreateDatabasesForTenants(c =>
+    {
+        c.ForTenant()
+         .CheckAgainstPgDatabase()      // check if database exists
+         .WithOwner("postgres")         // match your PostgreSQL user
+         .WithEncoding("UTF-8")         // optional
+         .ConnectionLimit(-1);          // optional
+    });
+
+    // Map the Portfolio document
+    options.Schema.For<Portfolio.Service.Models.Portfolio>().Identity(x => x.Id);
+})
+.UseLightweightSessions();
 
 // builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
 
@@ -52,8 +71,8 @@ builder.Services.AddGrpcClient<MarketDataProtoService.MarketDataProtoServiceClie
 // Async Communication Services
 builder.Services.AddMessageBroker(builder.Configuration);
 
-// if (builder.Environment.IsDevelopment())
-//    builder.Services.InitializeMartenWith<PortfolioInitialData>(); // seed data
+if (builder.Environment.IsDevelopment())
+    builder.Services.InitializeMartenWith<PortfolioInitialData>(); // seed data
 
 // Cross-cutting concerns
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
@@ -72,7 +91,7 @@ if (app.Environment.IsDevelopment())
     var store = scope.ServiceProvider.GetRequiredService<IDocumentStore>();
 
     // 1? Wipe the Marten database completely
-    await store.Advanced.Clean.CompletelyRemoveAllAsync();
+    // await store.Advanced.Clean.CompletelyRemoveAllAsync();
 
     // 2? Reseed data
     // var seeder = new PortfolioInitialData();
