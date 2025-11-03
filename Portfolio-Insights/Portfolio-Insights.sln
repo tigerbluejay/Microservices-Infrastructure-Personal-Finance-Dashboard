@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks.Messaging", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks", "BuildingBlocks\BuildingBlocks.csproj", "{FF256BB1-7E6D-4B0B-8BD8-4F8A675D709E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Portfolio.Service", "Portfolio.Service\Portfolio.Service.csproj", "{1AC3EAE8-6AA5-4AC2-A8C8-2133107ED84E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +38,10 @@ Global
 		{FF256BB1-7E6D-4B0B-8BD8-4F8A675D709E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF256BB1-7E6D-4B0B-8BD8-4F8A675D709E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF256BB1-7E6D-4B0B-8BD8-4F8A675D709E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AC3EAE8-6AA5-4AC2-A8C8-2133107ED84E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AC3EAE8-6AA5-4AC2-A8C8-2133107ED84E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AC3EAE8-6AA5-4AC2-A8C8-2133107ED84E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AC3EAE8-6AA5-4AC2-A8C8-2133107ED84E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
