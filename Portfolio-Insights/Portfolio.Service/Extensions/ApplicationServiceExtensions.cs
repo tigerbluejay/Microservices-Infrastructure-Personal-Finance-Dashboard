@@ -30,10 +30,14 @@ namespace Portfolio.Service.Extensions
                 config.AddOpenBehavior(typeof(LoggingBehavior<,>));
             });
 
+            // Retrieve connection string correctly
+            var connectionString = builder.Configuration.GetConnectionString("Database")
+                ?? throw new InvalidOperationException("Connection string 'Database' not found in configuration.");
+
             // Data Services (Marten)
             services.AddMarten(options =>
             {
-                options.Connection(builder.Configuration.GetConnectionString("Database")!);
+                options.Connection(connectionString);
                 options.AutoCreateSchemaObjects = AutoCreate.All;
 
                 options.CreateDatabasesForTenants(c =>
@@ -84,7 +88,7 @@ namespace Portfolio.Service.Extensions
             // Cross-cutting concerns
             services.AddExceptionHandler<CustomExceptionHandler>();
             services.AddHealthChecks()
-                    .AddNpgSql(builder.Configuration.GetConnectionString("Database")!);
+                    .AddNpgSql(connectionString);
 
             return services;
         }

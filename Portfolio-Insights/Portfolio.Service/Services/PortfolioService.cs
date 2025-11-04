@@ -27,26 +27,31 @@ namespace Portfolio.Service.Services
             {
                 Id = Guid.NewGuid(),
                 Symbol = assetDto.Symbol,
-                Name = assetDto.Name ?? "",
+                Name = assetDto.Name ?? string.Empty,
                 Quantity = assetDto.Quantity
             };
 
             await _repository.AddAssetAsync(userName, asset);
 
             var portfolio = await _repository.GetByUserNameAsync(userName);
-            var assetsDto = portfolio.Assets
+            var assetsDto = portfolio?.Assets
                 .Select(a => new PortfolioAssetDto(a.Symbol, a.Quantity, a.Name))
                 .ToList();
 
             await _publisher.PublishAsync(userName, assetsDto);
         }
 
-        public async Task RemoveAssetAsync(string userName, Guid assetId)
+        public async Task RemoveAssetBySymbolAsync(string userName, string symbol)
         {
-            await _repository.RemoveAssetAsync(userName, assetId);
-
             var portfolio = await _repository.GetByUserNameAsync(userName);
-            var assetsDto = portfolio.Assets
+            if (portfolio == null)
+                throw new Exception($"Portfolio for user '{userName}' not found.");
+
+            // Remove the asset through repository
+            await _repository.RemoveAssetBySymbolAsync(userName, symbol);
+
+            var updatedPortfolio = await _repository.GetByUserNameAsync(userName);
+            var assetsDto = updatedPortfolio?.Assets
                 .Select(a => new PortfolioAssetDto(a.Symbol, a.Quantity, a.Name))
                 .ToList();
 
@@ -56,8 +61,10 @@ namespace Portfolio.Service.Services
         public async Task<List<PortfolioValueDto>> RevalueAsync(string userName)
         {
             var portfolio = await _repository.GetByUserNameAsync(userName);
-            var symbols = portfolio.Assets.Select(a => a.Symbol);
+            if (portfolio == null)
+                throw new Exception($"Portfolio for user '{userName}' not found.");
 
+            var symbols = portfolio.Assets.Select(a => a.Symbol);
             var prices = await _marketDataClient.GetPricesAsync(symbols);
 
             var result = portfolio.Assets.Select(a =>
@@ -65,12 +72,15 @@ namespace Portfolio.Service.Services
                     a.Symbol,
                     a.Name,
                     a.Quantity,
-                    prices.ContainsKey(a.Symbol) ? prices[a.Symbol] : 0,
-                    a.Quantity * (prices.ContainsKey(a.Symbol) ? prices[a.Symbol] : 0)
+                    prices.TryGetValue(a.Symbol, out var price) ? price : 0,
+                    a.Quantity * (prices.TryGetValue(a.Symbol, out price) ? price : 0)
                 )).ToList();
 
-            // Optionally, publish updated portfolio event
-            var assetsDto = portfolio.Assets.Select(a => new PortfolioAssetDto(a.Symbol, a.Quantity, a.Name)).ToList();
+            // Optionally publish updated portfolio
+            var assetsDto = portfolio.Assets
+                .Select(a => new PortfolioAssetDto(a.Symbol, a.Quantity, a.Name))
+                .ToList();
+
             await _publisher.PublishAsync(userName, assetsDto);
 
             return result;

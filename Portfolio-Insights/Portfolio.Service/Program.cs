@@ -30,7 +30,7 @@ if (app.Environment.IsDevelopment())
 app.MapCarter();
 app.UseExceptionHandler(options => { });
 
-app.MapHealthChecks("/health",
+app.MapHealthChecks("/api/portfolio/health",
     new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
     {
         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse

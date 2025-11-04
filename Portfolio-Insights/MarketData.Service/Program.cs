@@ -43,7 +43,7 @@ app.Use(async (context, next) =>
 app.UseHttpsRedirection();
 app.UseMigration();
 app.MapGrpcService<MarketDataGrpcService>();
-app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+app.MapHealthChecks("/api/marketdata/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });

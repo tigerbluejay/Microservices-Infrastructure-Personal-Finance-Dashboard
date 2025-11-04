@@ -8,7 +8,7 @@ namespace Portfolio.Service.Repositories
         Task AddAsync(Portfolio.Service.Models.Portfolio portfolio);
         Task UpdateAsync(Portfolio.Service.Models.Portfolio portfolio);
         Task AddAssetAsync(string userName, PortfolioAsset asset);
-        Task RemoveAssetAsync(string userName, Guid assetId);
+        Task RemoveAssetBySymbolAsync(string userName, string symbol);
         Task SaveChangesAsync(); // optional, can be used for batching
     }
 }

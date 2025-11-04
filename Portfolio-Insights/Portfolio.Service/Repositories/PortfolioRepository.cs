@@ -39,11 +39,19 @@ namespace Portfolio.Service.Repositories
             await _session.SaveChangesAsync();
         }
 
-        public async Task RemoveAssetAsync(string userName, Guid assetId)
+        public async Task RemoveAssetBySymbolAsync(string userName, string symbol)
         {
             var portfolio = await GetByUserNameAsync(userName);
-            if (portfolio == null) throw new Exception("Portfolio not found");
-            portfolio.Assets.RemoveAll(a => a.Id == assetId);
+            if (portfolio == null)
+                throw new Exception($"Portfolio for user '{userName}' not found.");
+
+            // Normalize and remove asset
+            var removed = portfolio.Assets.RemoveAll(a =>
+                a.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase));
+
+            if (removed == 0)
+                throw new Exception($"Asset with symbol '{symbol}' not found in portfolio.");
+
             _session.Store(portfolio);
             await _session.SaveChangesAsync();
         }
