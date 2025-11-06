@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks", "BuildingB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Portfolio.Service", "Portfolio.Service\Portfolio.Service.csproj", "{1AC3EAE8-6AA5-4AC2-A8C8-2133107ED84E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analytics.Domain", "..\Analytics.Domain\Analytics.Domain.csproj", "{BBDB62C1-0D8C-4A14-9671-B4E375BAD6A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +44,10 @@ Global
 		{1AC3EAE8-6AA5-4AC2-A8C8-2133107ED84E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1AC3EAE8-6AA5-4AC2-A8C8-2133107ED84E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1AC3EAE8-6AA5-4AC2-A8C8-2133107ED84E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBDB62C1-0D8C-4A14-9671-B4E375BAD6A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBDB62C1-0D8C-4A14-9671-B4E375BAD6A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBDB62C1-0D8C-4A14-9671-B4E375BAD6A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBDB62C1-0D8C-4A14-9671-B4E375BAD6A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
