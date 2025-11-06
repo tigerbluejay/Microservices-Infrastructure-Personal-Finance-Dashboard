@@ -1,6 +1,6 @@
-﻿namespace Portfolio.Service.DTOs
-{
-    public record PortfolioAssetDto
+﻿namespace BuildingBlocks.Messaging.DTOs;
+
+public record PortfolioAssetDto
 {
     public string Symbol { get; init; } = default!;
     public decimal Quantity { get; init; }
@@ -16,5 +16,4 @@
         Quantity = quantity;
         Name = name;
     }
-}
 }

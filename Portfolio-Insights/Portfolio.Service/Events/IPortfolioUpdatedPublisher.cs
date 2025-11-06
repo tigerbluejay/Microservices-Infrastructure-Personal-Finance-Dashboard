@@ -1,4 +1,5 @@
 ﻿using Portfolio.Service.DTOs;
+using BuildingBlocks.Messaging.DTOs;
 
 namespace Portfolio.Service.Events
 {

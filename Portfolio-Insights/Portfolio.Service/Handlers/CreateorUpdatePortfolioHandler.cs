@@ -3,6 +3,7 @@ using Portfolio.Service.DTOs;
 using Portfolio.Service.Events;
 using Portfolio.Service.Models;
 using Portfolio.Service.Repositories;
+using BuildingBlocks.Messaging.DTOs;
 
 namespace Portfolio.Service.Handlers
 {
@@ -75,7 +76,7 @@ namespace Portfolio.Service.Handlers
 
             // publish event
             var assetDtos = existing.Assets
-                .Select(a => new Portfolio.Service.DTOs.PortfolioAssetDto(a.Symbol, a.Quantity))
+                .Select(a => new PortfolioAssetDto(a.Symbol, a.Quantity))
                 .ToList();
 
             await _publisher.PublishAsync(existing.UserName, assetDtos);

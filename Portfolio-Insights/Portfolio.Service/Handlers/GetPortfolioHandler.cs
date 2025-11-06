@@ -6,9 +6,9 @@ using Portfolio.Service.Services;
 namespace Portfolio.Service.Handlers
 {
     // Query
-    public record GetPortfolioQuery(string UserName) : IQuery<PortfolioDto>;
+    public record GetPortfolioQuery(string UserName) : IQuery<PortfolioDto?>;
 
-    public class GetPortfolioHandler : IQueryHandler<GetPortfolioQuery, PortfolioDto>
+    public class GetPortfolioHandler : IQueryHandler<GetPortfolioQuery, PortfolioDto?>
     {
         private readonly IPortfolioRepository _repository;
         private readonly MarketDataGrpcClient _marketData;
@@ -19,7 +19,7 @@ namespace Portfolio.Service.Handlers
             _marketData = marketData;
         }
 
-        public async Task<PortfolioDto> Handle(GetPortfolioQuery request, CancellationToken cancellationToken)
+        public async Task<PortfolioDto?> Handle(GetPortfolioQuery request, CancellationToken cancellationToken)
         {
             var portfolio = await _repository.GetByUserNameAsync(request.UserName);
             if (portfolio == null) return null;

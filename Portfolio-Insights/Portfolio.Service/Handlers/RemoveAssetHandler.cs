@@ -2,6 +2,7 @@
 using MediatR;
 using Portfolio.Service.Events;
 using Portfolio.Service.Repositories;
+using BuildingBlocks.Messaging.DTOs;
 
 namespace Portfolio.Service.Handlers
 {
@@ -27,9 +28,9 @@ namespace Portfolio.Service.Handlers
             // Fetch updated portfolio to publish event
             var portfolio = await _repository.GetByUserNameAsync(request.UserName);
             var assetDtos = portfolio?.Assets
-                .Select(a => new Portfolio.Service.DTOs.PortfolioAssetDto(a.Symbol, a.Quantity))
+                .Select(a => new PortfolioAssetDto(a.Symbol, a.Quantity))
                 .ToList()
-                ?? new List<Portfolio.Service.DTOs.PortfolioAssetDto>();
+                ?? new List<PortfolioAssetDto>();
 
             await _publisher.PublishAsync(request.UserName, assetDtos);
 

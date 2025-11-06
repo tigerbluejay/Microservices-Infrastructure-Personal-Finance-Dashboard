@@ -84,7 +84,7 @@ namespace Portfolio.Service.Handlers
 
             // Publish updated portfolio event (full list)
             var assetDtos = portfolio.Assets
-                .Select(a => new Portfolio.Service.DTOs.PortfolioAssetDto(a.Symbol, a.Quantity))
+                .Select(a => new BuildingBlocks.Messaging.DTOs.PortfolioAssetDto(a.Symbol, a.Quantity))
                 .ToList();
 
             await _publisher.PublishAsync(userName, assetDtos);

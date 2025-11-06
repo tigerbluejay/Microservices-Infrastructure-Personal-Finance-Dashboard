@@ -1,6 +1,8 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Logging;
 using Portfolio.Service.DTOs;
+using BuildingBlocks.Messaging.DTOs;
+using BuildingBlocks.Messaging.Events;
 
 namespace Portfolio.Service.Events
 {

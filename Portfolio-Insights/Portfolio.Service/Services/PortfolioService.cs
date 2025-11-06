@@ -2,6 +2,7 @@
 using Portfolio.Service.Events;
 using Portfolio.Service.Models;
 using Portfolio.Service.Repositories;
+using BuildingBlocks.Messaging.DTOs;
 
 namespace Portfolio.Service.Services
 {
@@ -36,7 +37,7 @@ namespace Portfolio.Service.Services
             var portfolio = await _repository.GetByUserNameAsync(userName);
             var assetsDto = portfolio?.Assets
                 .Select(a => new PortfolioAssetDto(a.Symbol, a.Quantity, a.Name))
-                .ToList();
+                .ToList() ?? new List<PortfolioAssetDto>();
 
             await _publisher.PublishAsync(userName, assetsDto);
         }
@@ -51,9 +52,9 @@ namespace Portfolio.Service.Services
             await _repository.RemoveAssetBySymbolAsync(userName, symbol);
 
             var updatedPortfolio = await _repository.GetByUserNameAsync(userName);
-            var assetsDto = updatedPortfolio?.Assets
-                .Select(a => new PortfolioAssetDto(a.Symbol, a.Quantity, a.Name))
-                .ToList();
+            var assetsDto = portfolio?.Assets
+                    .Select(a => new PortfolioAssetDto(a.Symbol, a.Quantity, a.Name))
+                    .ToList() ?? new List<PortfolioAssetDto>();
 
             await _publisher.PublishAsync(userName, assetsDto);
         }
