@@ -22,6 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Analytics.Application\Analytics.Application.csproj" />
 		<ProjectReference Include="..\Analytics.Domain\Analytics.Domain.csproj" />
 		<ProjectReference Include="..\BuildingBlocks.Messaging\BuildingBlocks.Messaging.csproj" />
 	</ItemGroup>

@@ -1,9 +1,11 @@
-﻿using MassTransit;
-using Analytics.Domain.Events; // define AnalyticsComputedEvent in Domain or a shared DTO project
+﻿using System.Threading.Tasks;
+using MassTransit;
+using BuildingBlocks.Messaging.Events;
+using Analytics.Application.EventPublishers;
 
 namespace Analytics.Infrastructure.Messaging.Publishers
 {
-    public class AnalyticsComputedPublisher
+    public class AnalyticsComputedPublisher : IAnalyticsComputedPublisher
     {
         private readonly IBus _bus;
 
@@ -12,9 +14,9 @@ namespace Analytics.Infrastructure.Messaging.Publishers
             _bus = bus;
         }
 
-        public async Task PublishAsync(AnalyticsComputedDomainEvent @event)
+        public async Task PublishAsync(AnalyticsComputedEvent eventMessage)
         {
-            await _bus.Publish(@event);
+            await _bus.Publish(eventMessage);
         }
     }
 }
