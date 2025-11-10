@@ -1,8 +1,9 @@
-using HealthChecks.UI.Client;
-using Microsoft.AspNetCore.Http.Json;
 using Analytics.API;
 using Analytics.Application;
 using Analytics.Infrastructure;
+using Analytics.Infrastructure.Data;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,5 +37,13 @@ app.MapHealthChecks("/health",
     });
 
 app.UseApiServices();
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AnalyticsDbContext>();
+    DevSeeder.Seed(dbContext);
+}
+
 
 app.Run();
