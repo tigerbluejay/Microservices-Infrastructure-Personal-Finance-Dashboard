@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Analytics.Application.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,7 @@ namespace Analytics.Infrastructure.Data.Extensions
 
             services.AddDbContext<AnalyticsDbContext>(options =>
                 options.UseSqlServer(connectionString));
+            services.AddScoped<IAnalyticsDbContext>(provider => provider.GetRequiredService<AnalyticsDbContext>());
 
             return services;
         }

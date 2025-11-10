@@ -13,11 +13,6 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Analytics.API/Analytics.API.csproj", "Analytics.API/"]
-COPY ["Analytics.Application/Analytics.Application.csproj", "Analytics.Application/"]
-COPY ["Analytics.Domain/Analytics.Domain.csproj", "Analytics.Domain/"]
-COPY ["BuildingBlocks.Messaging/BuildingBlocks.Messaging.csproj", "BuildingBlocks.Messaging/"]
-COPY ["BuildingBlocks/BuildingBlocks.csproj", "BuildingBlocks/"]
-COPY ["Analytics.Infrastructure/Analytics.Infrastructure.csproj", "Analytics.Infrastructure/"]
 RUN dotnet restore "./Analytics.API/Analytics.API.csproj"
 COPY . .
 WORKDIR "/src/Analytics.API"

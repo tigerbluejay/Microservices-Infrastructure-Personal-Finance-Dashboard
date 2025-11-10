@@ -1,4 +1,5 @@
-﻿using Analytics.Domain.Abstractions;
+﻿using Analytics.Application.Data;
+using Analytics.Domain.Abstractions;
 using Analytics.Domain.Models;
 using Analytics.Infrastructure.Data.Interceptors;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ using System.Reflection.Emit;
 
 namespace Analytics.Infrastructure.Data
 {
-    public class AnalyticsDbContext : DbContext
+    public class AnalyticsDbContext : DbContext, IAnalyticsDbContext
     {
         private readonly AuditableEntityInterceptor _auditInterceptor;
         private readonly DispatchDomainEventInterceptor _dispatchInterceptor;
