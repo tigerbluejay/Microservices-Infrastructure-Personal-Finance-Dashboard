@@ -14,7 +14,6 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["MarketData.Service/MarketData.Service.csproj", "MarketData.Service/"]
 COPY ["BuildingBlocks.Messaging/BuildingBlocks.Messaging.csproj", "BuildingBlocks.Messaging/"]
-COPY ["BuildingBlocks/BuildingBlocks.csproj", "BuildingBlocks/"]
 RUN dotnet restore "./MarketData.Service/MarketData.Service.csproj"
 COPY . .
 WORKDIR "/src/MarketData.Service"

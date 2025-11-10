@@ -1,6 +1,7 @@
 ﻿using System;
 using Analytics.Domain.Abstractions;
 using Analytics.Domain.ValueObjects;
+using MediatR;
 
 
 namespace Analytics.Domain.Events
@@ -8,7 +9,7 @@ namespace Analytics.Domain.Events
     /// <summary>
     /// Domain event emitted when analytics have been computed for a user.
     /// </summary>
-    public sealed class AnalyticsComputedDomainEvent : IDomainEvent
+    public sealed class AnalyticsComputedDomainEvent : INotification, IDomainEvent
     {
         public UserName User { get; }
         public AnalyticsId AnalyticsId { get; }

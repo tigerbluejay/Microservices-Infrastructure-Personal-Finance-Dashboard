@@ -14,13 +14,19 @@ namespace Analytics.Domain.Models
     /// </summary>
     public class PortfolioAnalytics : AggregateRoot<AnalyticsId>
     {
-        public UserName User { get; private set; } = default!;
+        private List<AssetContribution> _assetContributions = new();
 
+ 
+        public UserName User { get; private set; } = default!;
 
         public decimal TotalValue { get; private set; }
         public decimal DailyChangePercent { get; private set; }
         public decimal TotalReturnPercent { get; private set; }
-        public IReadOnlyList<AssetContribution> AssetContributions { get; private set; } = Array.Empty<AssetContribution>();
+                public IReadOnlyList<AssetContribution> AssetContributions
+        {
+            get => _assetContributions;
+            private set => _assetContributions = value.ToList(); // EF materialization works
+        }
         public DateTime LastUpdatedUtc { get; private set; }
 
         // optional: keep snapshot history in-memory for domain logic; persistence layer should store it.

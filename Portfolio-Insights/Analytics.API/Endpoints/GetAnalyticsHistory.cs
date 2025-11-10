@@ -10,7 +10,7 @@ namespace Analytics.API.Endpoints
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapGet("/analytics/{userName}/history", async (string userName, IAnalyticsDbContext dbContext) =>
+            app.MapGet("/api/analytics/{userName}/history", async (string userName, IAnalyticsDbContext dbContext) =>
             {
                 var analytics = await dbContext.PortfolioAnalytics
                     .Include(a => a.Snapshots)
