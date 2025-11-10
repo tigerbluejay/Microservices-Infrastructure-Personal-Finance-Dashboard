@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analytics.Infrastructure", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analytics.Application", "Analytics.Application\Analytics.Application.csproj", "{E1BC9179-4DBA-400F-A679-3E45108A888C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analytics.API", "Analytics.API\Analytics.API.csproj", "{208829D1-B78F-48CF-B7F7-F73A06C17AA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,6 +62,10 @@ Global
 		{E1BC9179-4DBA-400F-A679-3E45108A888C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E1BC9179-4DBA-400F-A679-3E45108A888C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E1BC9179-4DBA-400F-A679-3E45108A888C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{208829D1-B78F-48CF-B7F7-F73A06C17AA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{208829D1-B78F-48CF-B7F7-F73A06C17AA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{208829D1-B78F-48CF-B7F7-F73A06C17AA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{208829D1-B78F-48CF-B7F7-F73A06C17AA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
