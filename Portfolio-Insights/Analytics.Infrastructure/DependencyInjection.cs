@@ -6,10 +6,14 @@ using Analytics.Infrastructure.Data.Interceptors;
 using Analytics.Infrastructure.Messaging.Consumers;
 using Analytics.Infrastructure.Messaging.Publishers;
 using Analytics.Infrastructure.Services;
+using BuildingBlocks.Messaging.Events;
+using BuildingBlocks.Messaging.MassTransit;
 using MarketData.Service;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Reflection;
 
 namespace Analytics.Infrastructure
 {
@@ -19,20 +23,19 @@ namespace Analytics.Infrastructure
             this IServiceCollection services,
             IConfiguration configuration)
         {
+            // Interceptors
             services.AddScoped<AuditableEntityInterceptor>();
             services.AddScoped<DispatchDomainEventInterceptor>();
 
-            // Register your publisher
+            // Publishers
             services.AddScoped<IAnalyticsComputedPublisher, AnalyticsComputedPublisher>();
-
-            services.AddDatabase(configuration);
-
-
-            services.AddScoped<MarketDataGrpcClient>();
             services.AddScoped<AnalyticsComputedPublisher>();
 
+            // Database
+            services.AddDatabase(configuration);
 
-            // gRPC Services
+            // gRPC Client
+            services.AddScoped<MarketDataGrpcClient>();
             services.AddGrpcClient<MarketDataProtoService.MarketDataProtoServiceClient>(options =>
             {
                 options.Address = new Uri(configuration["GrpcSettings:MarketDataUrl"]!);
@@ -47,25 +50,20 @@ namespace Analytics.Infrastructure
                 return handler;
             });
 
+            // Message broker setup (MassTransit)
+            services.AddMessageBroker(configuration, Assembly.GetExecutingAssembly());
 
-            services.AddMassTransit(cfg =>
+            // Add consumers to existing MassTransit registration
+            services.TryAddScoped<PortfolioUpdatedConsumer>();
+            services.TryAddScoped<MarketPricesUpdatedConsumer>();
+
+            // Configure the bus if AddMessageBroker doesn't do it fully
+            services.Configure<MassTransitHostOptions>(options =>
             {
-                cfg.AddConsumer<PortfolioUpdatedConsumer>();
-                cfg.AddConsumer<MarketPricesUpdatedConsumer>();
-
-                cfg.UsingRabbitMq((context, cfgBus) =>
-                {
-                    cfgBus.Host(new Uri(configuration["MessageBroker:Host"]!), h =>
-                    {
-                        h.Username(configuration["MessageBroker:UserName"]);
-                        h.Password(configuration["MessageBroker:Password"]);
-                    });
-
-                    cfgBus.ConfigureEndpoints(context);
-                });
+                options.WaitUntilStarted = true;
+                options.StartTimeout = TimeSpan.FromSeconds(30);
             });
 
-            // Add other infrastructure registrations (MassTransit, gRPC, etc.) in later phases
             return services;
         }
     }

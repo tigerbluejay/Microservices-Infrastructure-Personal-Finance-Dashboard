@@ -50,12 +50,18 @@ namespace MarketData.Service.Handlers
                     Price = price.Price,
                     Timestamp = price.LastUpdated
                 });
+
+                // Console logging
+                Console.WriteLine($"[Simulate] Updated {price.Symbol}: {price.Price:F2} at {price.LastUpdated:O}");
             }
 
             await _context.SaveChangesAsync(cancellationToken);
 
             // Publish event
-            await _publisher.PublishAsync(updatedPrices.Select(p => new MarketPriceDto(p.Symbol, p.Price)).ToList());
+            var eventDtos = updatedPrices.Select(p => new MarketPriceDto(p.Symbol, p.Price)).ToList();
+            await _publisher.PublishAsync(eventDtos);
+
+            Console.WriteLine($"[Simulate] Published MarketPricesUpdatedEvent with {eventDtos.Count} prices.");
 
             return new SimulateResult(true, DateTime.UtcNow);
         }

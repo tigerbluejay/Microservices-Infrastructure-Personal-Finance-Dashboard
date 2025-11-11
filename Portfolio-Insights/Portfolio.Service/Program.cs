@@ -23,7 +23,7 @@ if (app.Environment.IsDevelopment())
     var seeder = new PortfolioInitialData();
     await seeder.Populate(store, default);
 
-    Console.WriteLine("Catalog database wiped and reseeded successfully.");
+    Console.WriteLine("Portfolio database wiped and reseeded successfully.");
 }
 
 // Configure HTTP request pipeline

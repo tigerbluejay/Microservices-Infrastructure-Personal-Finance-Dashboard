@@ -71,8 +71,7 @@ namespace Portfolio.Service.Extensions
             // Wrapper gRPC client
             services.AddScoped<Portfolio.Service.Services.MarketDataGrpcClient>();
 
-            // Async Communication
-            services.AddMessageBroker(builder.Configuration);
+            services.AddMessageBroker(builder.Configuration, assembly);
 
             // Portfolio Repository
             services.AddScoped<IPortfolioRepository, PortfolioRepository>();

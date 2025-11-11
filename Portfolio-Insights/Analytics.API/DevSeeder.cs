@@ -18,7 +18,7 @@ namespace Analytics.API
                 // Seed PortfolioAnalytics aggregates
                 var portfolio1 = new PortfolioAnalytics(
                     new AnalyticsId(Guid.NewGuid()),
-                    new UserName("alice")
+                    new UserName("johndoe")
                 );
                 portfolio1.ComputeFromCurrentValues(new List<(string Symbol, decimal CurrentValue)>
                 {
@@ -29,7 +29,7 @@ namespace Analytics.API
 
                 var portfolio2 = new PortfolioAnalytics(
                     new AnalyticsId(Guid.NewGuid()),
-                    new UserName("bob")
+                    new UserName("janedoe")
                 );
                 portfolio2.ComputeFromCurrentValues(new List<(string Symbol, decimal CurrentValue)>
                 {

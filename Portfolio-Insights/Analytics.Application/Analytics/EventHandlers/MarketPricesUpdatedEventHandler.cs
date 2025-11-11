@@ -1,52 +1,77 @@
 ﻿using Analytics.Application.Analytics.Commands;
+using Analytics.Application.Data;
 using BuildingBlocks.Messaging.Events;
-using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
+using MediatR;
 
 namespace Analytics.Application.Analytics.EventHandlers
 {
     /// <summary>
-    /// Handles market price updates coming from the Market Data Service.
-    /// Recomputes analytics for affected users.
+    /// Handles MarketPricesUpdatedEvent messages from the Market Data Service.
+    /// Recomputes analytics for all affected users.
     /// </summary>
-    public class MarketPricesUpdatedEventHandler
+    public interface IMarketPricesUpdatedHandler
+    {
+        Task Handle(MarketPricesUpdatedEvent @event, CancellationToken cancellationToken = default);
+    }
+
+    public class MarketPricesUpdatedHandler : IMarketPricesUpdatedHandler
     {
         private readonly IMediator _mediator;
+        private readonly ILogger<MarketPricesUpdatedHandler> _logger;
+        private readonly IAnalyticsDbContext _dbContext;
 
-        public MarketPricesUpdatedEventHandler(IMediator mediator)
+        public MarketPricesUpdatedHandler(
+            IMediator mediator,
+            ILogger<MarketPricesUpdatedHandler> logger,
+            IAnalyticsDbContext dbContext)
         {
             _mediator = mediator;
+            _logger = logger;
+            _dbContext = dbContext;
         }
 
-        public async Task Handle(MarketPricesUpdatedEvent @event, CancellationToken cancellationToken)
+        public async Task Handle(MarketPricesUpdatedEvent @event, CancellationToken cancellationToken = default)
         {
-            // Convert price list to a dictionary for convenient lookup
+            _logger.LogInformation("[Analytics] Handling MarketPricesUpdatedEvent with {Count} prices at {Timestamp}",
+                @event.Prices.Count, System.DateTime.UtcNow);
+
             var priceDict = @event.Prices.ToDictionary(p => p.Symbol, p => p.Price);
 
-            // TODO: later fetch affected users from DB or cache.
-            var affectedUsers = await GetAffectedUsersAsync(@event.Prices);
+            var portfolios = await _dbContext.PortfolioAnalytics
+                .Include(p => p.AssetContributions)
+                .ToListAsync(cancellationToken);
 
-            // Temporary placeholder assets — replace later with real user portfolios
-            var emptyAssets = new List<BuildingBlocks.Messaging.DTOs.PortfolioAssetDto>();
-
-            foreach (var userName in affectedUsers)
+            foreach (var portfolio in portfolios)
             {
-                var command = new ComputeAnalyticsCommand(userName, emptyAssets, priceDict);
-                await _mediator.Send(command, cancellationToken);
-            }
-        }
+                if (!portfolio.AssetContributions.Any())
+                {
+                    _logger.LogInformation("[Analytics] No assets for user {UserName}, skipping", portfolio.User.Value);
+                    continue;
+                }
 
-        /// <summary>
-        /// Placeholder: returns all users for now.
-        /// Later, filter only users who own assets in the updated price list.
-        /// </summary>
-        private Task<List<string>> GetAffectedUsersAsync(List<MarketPriceDto> prices)
-        {
-            // TODO: integrate with Portfolio or Analytics DB
-            return Task.FromResult(new List<string> { "demo_user" });
+                var assets = portfolio.AssetContributions
+                    .Select(a => new BuildingBlocks.Messaging.DTOs.PortfolioAssetDto
+                    {
+                        Symbol = a.Symbol,
+                        Quantity = 1 // TODO: replace with real quantity if available
+                    })
+                    .ToList();
+
+                var command = new ComputeAnalyticsCommand(
+                    portfolio.User.Value,
+                    assets,
+                    priceDict
+                );
+
+                await _mediator.Send(command, cancellationToken);
+
+                _logger.LogInformation("[Analytics] Finished computing analytics for user {UserName}", portfolio.User.Value);
+            }
         }
     }
 }

@@ -26,15 +26,17 @@ namespace Analytics.Application.Analytics.Commands
 
         public async Task<Unit> Handle(ComputeAnalyticsCommand request, CancellationToken cancellationToken)
         {
-            // Fetch current analytics for the user
             var existingAnalytics = await _dbContext.PortfolioAnalytics
+                .Include(a => a.AssetContributions) // make sure EF tracks changes
                 .FirstOrDefaultAsync(a => a.User.Value == request.UserName, cancellationToken);
 
-            // Compute asset values using quantities and latest prices
+            // Compute asset values using actual quantities and latest prices
             var assetValues = request.Assets
                 .Select(a =>
                 {
-                    var price = request.LatestPrices[a.Symbol];
+                    var price = request.LatestPrices.ContainsKey(a.Symbol)
+                        ? request.LatestPrices[a.Symbol]
+                        : 0m;
                     return (Symbol: a.Symbol, CurrentValue: a.Quantity * price);
                 })
                 .ToList();
@@ -44,21 +46,20 @@ namespace Analytics.Application.Analytics.Commands
             {
                 analytics = new PortfolioAnalytics(
                     new AnalyticsId(),
-                    new Domain.ValueObjects.UserName(request.UserName)
+                    new UserName(request.UserName)
                 );
+                _dbContext.PortfolioAnalytics.Add(analytics);
             }
             else
             {
                 analytics = existingAnalytics;
-                analytics.Reset();
+                analytics.Reset(); // reset totals before recomputing
             }
 
-            // Compute analytics
             analytics.ComputeFromCurrentValues(assetValues);
 
-            if (existingAnalytics is null)
-                _dbContext.PortfolioAnalytics.Add(analytics);
-
+            // Ensure EF Core tracks the changes
+            _dbContext.PortfolioAnalytics.Update(analytics);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             // Publish integration event

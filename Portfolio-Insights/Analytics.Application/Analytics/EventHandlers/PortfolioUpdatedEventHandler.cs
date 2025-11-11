@@ -7,11 +7,15 @@ using System.Collections.Generic;
 
 namespace Analytics.Application.Analytics.EventHandlers
 {
+    public interface IPortfolioUpdatedEventHandler
+    {
+        Task Handle(PortfolioUpdatedEvent @event, CancellationToken cancellationToken = default);
+    }
     /// <summary>
     /// Handles events from the Portfolio Service when a user's portfolio has changed.
     /// Triggers computation of updated analytics for that user.
     /// </summary>
-    public class PortfolioUpdatedEventHandler
+    public class PortfolioUpdatedEventHandler : IPortfolioUpdatedEventHandler
     {
         private readonly IMediator _mediator;
 

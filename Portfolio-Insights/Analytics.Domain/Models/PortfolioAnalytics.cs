@@ -16,7 +16,6 @@ namespace Analytics.Domain.Models
     {
         private List<AssetContribution> _assetContributions = new();
 
- 
         public UserName User { get; private set; } = default!;
 
         public decimal TotalValue { get; private set; }

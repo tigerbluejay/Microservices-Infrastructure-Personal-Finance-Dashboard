@@ -14,8 +14,8 @@ namespace Analytics.Application
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 
             // Register event handlers
-            services.AddScoped<PortfolioUpdatedEventHandler>();
-            services.AddScoped<MarketPricesUpdatedEventHandler>();
+            services.AddScoped<IMarketPricesUpdatedHandler, MarketPricesUpdatedHandler>();
+            services.AddScoped<IPortfolioUpdatedEventHandler, PortfolioUpdatedEventHandler>();
 
             // Register application services
             services.AddScoped<IAnalyticsCalculator, AnalyticsCalculator>();
