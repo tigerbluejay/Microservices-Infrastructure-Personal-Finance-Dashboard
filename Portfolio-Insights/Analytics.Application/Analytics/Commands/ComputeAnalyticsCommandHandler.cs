@@ -26,12 +26,18 @@ namespace Analytics.Application.Analytics.Commands
 
         public async Task<Unit> Handle(ComputeAnalyticsCommand request, CancellationToken cancellationToken)
         {
+            if (request.Assets == null)
+                throw new ArgumentNullException(nameof(request.Assets), "Assets cannot be null in ComputeAnalyticsCommand.");
+
+            if (request.LatestPrices == null)
+                throw new ArgumentNullException(nameof(request.LatestPrices), "LatestPrices cannot be null in ComputeAnalyticsCommand.");
+
             var existingAnalytics = await _dbContext.PortfolioAnalytics
-                .Include(a => a.AssetContributions) // make sure EF tracks changes
+                .Include(a => a.AssetContributions)
                 .FirstOrDefaultAsync(a => a.User.Value == request.UserName, cancellationToken);
 
-            // Compute asset values using actual quantities and latest prices
             var assetValues = request.Assets
+                .Where(a => a != null)
                 .Select(a =>
                 {
                     var price = request.LatestPrices.ContainsKey(a.Symbol)

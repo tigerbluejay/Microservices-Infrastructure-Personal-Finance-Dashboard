@@ -1,5 +1,5 @@
 ﻿using Analytics.Application.Analytics.Commands;
-using Analytics.Infrastructure.Services;
+using BuildingBlocks.Services;
 using MediatR;
 using Carter;
 using Microsoft.AspNetCore.Http;

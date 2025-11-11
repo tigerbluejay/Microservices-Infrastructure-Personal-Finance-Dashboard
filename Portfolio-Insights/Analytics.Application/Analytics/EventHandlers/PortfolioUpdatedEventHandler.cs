@@ -1,9 +1,13 @@
-﻿using Analytics.Application.Analytics.Commands;
+﻿using Analytics.Application.Data;
+using Analytics.Domain.Models;
+using Analytics.Domain.ValueObjects;
 using BuildingBlocks.Messaging.Events;
-using MediatR;
+using BuildingBlocks.Services;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace Analytics.Application.Analytics.EventHandlers
 {
@@ -11,28 +15,65 @@ namespace Analytics.Application.Analytics.EventHandlers
     {
         Task Handle(PortfolioUpdatedEvent @event, CancellationToken cancellationToken = default);
     }
-    /// <summary>
-    /// Handles events from the Portfolio Service when a user's portfolio has changed.
-    /// Triggers computation of updated analytics for that user.
-    /// </summary>
+
     public class PortfolioUpdatedEventHandler : IPortfolioUpdatedEventHandler
     {
-        private readonly IMediator _mediator;
+        private readonly IAnalyticsDbContext _dbContext;
+        private readonly MarketDataGrpcClient _marketDataClient;
 
-        public PortfolioUpdatedEventHandler(IMediator mediator)
+        public PortfolioUpdatedEventHandler(IAnalyticsDbContext dbContext, MarketDataGrpcClient marketDataClient)
         {
-            _mediator = mediator;
+            _dbContext = dbContext;
+            _marketDataClient = marketDataClient;
         }
 
         public async Task Handle(PortfolioUpdatedEvent @event, CancellationToken cancellationToken)
         {
-            // For now, prices are not passed — the Application layer can later fetch them via gRPC.
-            var command = new ComputeAnalyticsCommand(
-                @event.UserName,
-                @event.Assets
-            );
+            Console.WriteLine($"📩 PortfolioUpdatedEvent received for user '{@event.UserName}' with {@event.Assets.Count} assets.");
 
-            await _mediator.Send(command, cancellationToken);
+            // Get or create analytics aggregate
+            var analytics = await _dbContext.PortfolioAnalytics
+                .FirstOrDefaultAsync(a => a.User.Value == @event.UserName, cancellationToken);
+
+            if (analytics == null)
+            {
+                analytics = new PortfolioAnalytics(AnalyticsId.New(), new UserName(@event.UserName));
+                _dbContext.PortfolioAnalytics.Add(analytics);
+            }
+
+            // Fetch latest prices (looping one by one through the gRPC client)
+            var symbols = @event.Assets.Select(a => a.Symbol).Distinct().ToList();
+            var prices = new Dictionary<string, decimal>();
+
+            foreach (var symbol in symbols)
+            {
+                try
+                {
+                    var price = await _marketDataClient.GetPriceAsync(symbol);
+                    prices[symbol] = price;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"⚠️ Failed to fetch price for {symbol}: {ex.Message}");
+                    prices[symbol] = 0m; // fallback to 0 if price retrieval fails
+                }
+            }
+
+            // Compute asset values
+            var assetValues = @event.Assets.Select(a =>
+            {
+                var price = prices.TryGetValue(a.Symbol, out var p) ? p : 0m;
+                var currentValue = price * a.Quantity;
+                return (a.Symbol, currentValue);
+            });
+
+            // Recompute analytics
+            analytics.ComputeFromCurrentValues(assetValues);
+
+            // Persist
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            Console.WriteLine($"✅ Portfolio analytics updated for '{@event.UserName}'.");
         }
     }
 }

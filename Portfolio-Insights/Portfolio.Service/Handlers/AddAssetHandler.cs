@@ -76,6 +76,14 @@ namespace Portfolio.Service.Handlers
                 await _repository.UpdateAsync(portfolio);
             }
 
+            // testing log
+            var persisted = await _repository.GetByUserNameAsync(userName);
+
+            if (persisted != null)
+            {
+                Console.WriteLine($"Portfolio for {userName} has {persisted.Assets.Count} assets.");
+            }
+
             // Get price for the added/updated asset
             var prices = await _marketData.GetPricesAsync(new[] { symbol });
             prices.TryGetValue(symbol, out var price);

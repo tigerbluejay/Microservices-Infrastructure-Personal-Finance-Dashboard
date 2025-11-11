@@ -7,9 +7,9 @@ namespace Analytics.Infrastructure.Messaging.Consumers
 {
     public class MarketPricesUpdatedConsumer : IConsumer<MarketPricesUpdatedEvent>
     {
-        private readonly IMarketPricesUpdatedHandler _handler;
+        private readonly IMarketPricesUpdatedEventHandler _handler;
 
-        public MarketPricesUpdatedConsumer(IMarketPricesUpdatedHandler handler)
+        public MarketPricesUpdatedConsumer(IMarketPricesUpdatedEventHandler handler)
         {
             _handler = handler;
         }

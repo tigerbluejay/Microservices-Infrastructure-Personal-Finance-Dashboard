@@ -5,7 +5,7 @@ using Analytics.Infrastructure.Data.Extensions;
 using Analytics.Infrastructure.Data.Interceptors;
 using Analytics.Infrastructure.Messaging.Consumers;
 using Analytics.Infrastructure.Messaging.Publishers;
-using Analytics.Infrastructure.Services;
+using BuildingBlocks.Services;
 using BuildingBlocks.Messaging.Events;
 using BuildingBlocks.Messaging.MassTransit;
 using MarketData.Service;
@@ -35,7 +35,7 @@ namespace Analytics.Infrastructure
             services.AddDatabase(configuration);
 
             // gRPC Client
-            services.AddScoped<MarketDataGrpcClient>();
+            // gRPC Client setup
             services.AddGrpcClient<MarketDataProtoService.MarketDataProtoServiceClient>(options =>
             {
                 options.Address = new Uri(configuration["GrpcSettings:MarketDataUrl"]!);
@@ -48,6 +48,13 @@ namespace Analytics.Infrastructure
                         HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 };
                 return handler;
+            });
+
+            // Register wrapper that depends on the above
+            services.AddScoped<MarketDataGrpcClient>(sp =>
+            {
+                var protoClient = sp.GetRequiredService<MarketDataProtoService.MarketDataProtoServiceClient>();
+                return new MarketDataGrpcClient(protoClient);
             });
 
             // Message broker setup (MassTransit)
