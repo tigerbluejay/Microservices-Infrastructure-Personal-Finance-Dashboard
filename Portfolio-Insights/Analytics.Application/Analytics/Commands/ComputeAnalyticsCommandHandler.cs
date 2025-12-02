@@ -5,6 +5,7 @@ using Analytics.Domain.ValueObjects;
 using BuildingBlocks.Messaging.Events;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,41 +35,51 @@ namespace Analytics.Application.Analytics.Commands
 
             var existingAnalytics = await _dbContext.PortfolioAnalytics
                 .Include(a => a.AssetContributions)
+                .Include(a => a.Snapshots)
                 .FirstOrDefaultAsync(a => a.User.Value == request.UserName, cancellationToken);
 
             var assetValues = request.Assets
                 .Where(a => a != null)
                 .Select(a =>
                 {
-                    var price = request.LatestPrices.ContainsKey(a.Symbol)
-                        ? request.LatestPrices[a.Symbol]
+                    var price = request.LatestPrices.TryGetValue(a.Symbol, out var p)
+                        ? p
                         : 0m;
+
                     return (Symbol: a.Symbol, CurrentValue: a.Quantity * price);
                 })
                 .ToList();
 
             PortfolioAnalytics analytics;
+            decimal? previousTotal = null;
+            decimal? initialTotal = null;
+
             if (existingAnalytics is null)
             {
                 analytics = new PortfolioAnalytics(
                     new AnalyticsId(),
                     new UserName(request.UserName)
                 );
+
                 _dbContext.PortfolioAnalytics.Add(analytics);
             }
             else
             {
                 analytics = existingAnalytics;
-                analytics.Reset(); // reset totals before recomputing
+
+                previousTotal = analytics.Snapshots.LastOrDefault()?.TotalValue;
+                initialTotal = analytics.Snapshots.FirstOrDefault()?.TotalValue;
             }
 
-            analytics.ComputeFromCurrentValues(assetValues);
+            analytics.ComputeFromCurrentValues(
+                assetValues,
+                previousTotal,
+                initialTotal
+            );
 
-            // Ensure EF Core tracks the changes
             _dbContext.PortfolioAnalytics.Update(analytics);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            // Publish integration event
             await _publisher.PublishAsync(new AnalyticsComputedEvent(
                 analytics.User.Value,
                 analytics.TotalValue,
