@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analytics.Application", "An
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analytics.API", "Analytics.API\Analytics.API.csproj", "{208829D1-B78F-48CF-B7F7-F73A06C17AA0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.Service", "Notification.Service\Notification.Service.csproj", "{97BD4919-B17F-40F5-8D74-32F7678B77C0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +68,10 @@ Global
 		{208829D1-B78F-48CF-B7F7-F73A06C17AA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{208829D1-B78F-48CF-B7F7-F73A06C17AA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{208829D1-B78F-48CF-B7F7-F73A06C17AA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97BD4919-B17F-40F5-8D74-32F7678B77C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97BD4919-B17F-40F5-8D74-32F7678B77C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97BD4919-B17F-40F5-8D74-32F7678B77C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97BD4919-B17F-40F5-8D74-32F7678B77C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
