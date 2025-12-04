@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analytics.API", "Analytics.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.Service", "Notification.Service\Notification.Service.csproj", "{97BD4919-B17F-40F5-8D74-32F7678B77C0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YarpApiGateway", "YarpApiGateway\YarpApiGateway.csproj", "{4204C068-52F6-4334-8DAF-9D568D132F05}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,10 @@ Global
 		{97BD4919-B17F-40F5-8D74-32F7678B77C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97BD4919-B17F-40F5-8D74-32F7678B77C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97BD4919-B17F-40F5-8D74-32F7678B77C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4204C068-52F6-4334-8DAF-9D568D132F05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4204C068-52F6-4334-8DAF-9D568D132F05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4204C068-52F6-4334-8DAF-9D568D132F05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4204C068-52F6-4334-8DAF-9D568D132F05}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
