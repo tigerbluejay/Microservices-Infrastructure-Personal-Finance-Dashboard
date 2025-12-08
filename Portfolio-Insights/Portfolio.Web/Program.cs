@@ -1,7 +1,32 @@
+using Portfolio.Web.Services.Interfaces;
+using Refit;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.AddRefitClient<IAnalyticsService>()
+     .ConfigureHttpClient(c =>
+     {
+         c.BaseAddress = new Uri(builder.Configuration["ApiSettings:GatewayAddress"]!);
+     });
+builder.Services.AddRefitClient<IMarketDataService>()
+     .ConfigureHttpClient(c =>
+     {
+         c.BaseAddress = new Uri(builder.Configuration["ApiSettings:GatewayAddress"]!);
+     });
+
+builder.Services.AddRefitClient<IPortfolioService>()
+     .ConfigureHttpClient(c =>
+     {
+         c.BaseAddress = new Uri(builder.Configuration["ApiSettings:GatewayAddress"]!);
+     });
+builder.Services.AddRefitClient<INotificationService>()
+     .ConfigureHttpClient(c =>
+     {
+         c.BaseAddress = new Uri(builder.Configuration["ApiSettings:GatewayAddress"]!);
+     });
 
 var app = builder.Build();
 
@@ -13,7 +38,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();

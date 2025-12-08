@@ -10,6 +10,17 @@
 
   <ItemGroup>
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
+	    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
+	    <PackageReference Include="Refit" Version="8.0.0" />
+	    <PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\Analytics\" />
+    <Folder Include="Models\MarketData\" />
+    <Folder Include="Models\Notifications\" />
+    <Folder Include="Models\Portfolio\" />
+    <Folder Include="Services\Implementations\" />
   </ItemGroup>
 
 </Project>
