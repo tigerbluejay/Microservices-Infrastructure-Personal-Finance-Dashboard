@@ -1,10 +1,84 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-4">
+
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Welcome back, Jose!</h2>
+            <p class="text-muted">Today: @DateTime.UtcNow.ToString("dddd, MMM dd, yyyy")</p>
+        </div>
+    </div>
+
+    <!-- Portfolio Summary -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Portfolio Summary</h5>
+
+            <div>
+                Total Value: <strong>
+                    @Model.Summary?.TotalValue.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US"))
+                </strong>
+            </div>
+
+            <div>
+                Daily Change:
+                <strong class="@(Model.Summary?.DailyChangePercent >= 0 ? "text-success" : "text-danger")">
+                    @Model.Summary?.DailyChangePercent.ToString("0.##")%
+                </strong>
+            </div>
+
+            <div>
+                Total Return:
+                <strong>@Model.Summary?.TotalReturnPercent.ToString("0.##")%</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mini Chart -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Portfolio Performance</h5>
+            <canvas id="miniChart" height="80"></canvas>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Latest Notifications</h5>
+
+            <ul class="list-group list-group-flush">
+                @foreach (var n in Model.LatestNotifications)
+                {
+                    <li class="list-group-item">
+                        @n.Message
+                        <small class="text-muted d-block">@n.CreatedAt</small>
+                    </li>
+                }
+            </ul>
+
+            <a asp-page="/Notifications" class="btn btn-link mt-2">
+                View All Notifications →
+            </a>
+        </div>
+    </div>
+
+    <!-- Simulate Button -->
+    <button id="simulateBtn" class="btn btn-warning">
+        ⚙️ Simulate Market Update
+    </button>
+
+    @Html.AntiForgeryToken()
+
 </div>
+
+@section Scripts {
+    <script>
+        const historyData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.History));
+    </script>
+    <script src="~/js/dashboard.js"></script>
+}
