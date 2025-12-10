@@ -1,0 +1,118 @@
+﻿@page
+@model PortfolioModel
+@{
+    ViewData["Title"] = "Portfolio";
+}
+
+<!-- Global antiforgery token for ALL AJAX POST handlers -->
+<form id="globalAntiForgeryForm" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Your Portfolio</h2>
+            <p class="text-muted">Manage your assets below.</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Portfolio</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Name</th>
+                            <th class="text-end">Qty</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-end">Value</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="portfolioTbody">
+                        @foreach (var asset in Model.Portfolio.Assets)
+                        {
+                            <tr data-symbol="@asset.Symbol">
+                                <td>@asset.Symbol</td>
+                                <td>@asset.Name</td>
+                                <td class="text-end">@asset.Quantity</td>
+                                <td class="text-end">@asset.Price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US"))</td>
+                                <td class="text-end">@asset.Value.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US"))</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-danger delete-btn" data-symbol="@asset.Symbol">✕</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3">
+                <strong>Total Value: </strong>
+                <span id="totalValue">@Model.Portfolio.TotalValue.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US"))</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Add New Asset</h5>
+
+            <form id="addAssetForm" method="post" onsubmit="return false;">
+                @* Token already provided globally, remove duplicate *@
+
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-4">
+                        <label for="symbolSelect" class="form-label">Symbol</label>
+                        <select id="symbolSelect" class="form-select" required>
+                            @foreach (var s in Model.AvailableAssets)
+                            {
+                                <option value="@s.Symbol">@s.Symbol - @s.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="quantityInput" class="form-label">Quantity</label>
+                        <input id="quantityInput" type="number" class="form-control" min="1" value="1" required />
+                    </div>
+
+                    <div class="col-md-4 align-self-end">
+                        <button id="addAssetBtn" class="btn btn-primary">Add Asset</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="mb-4 d-flex justify-content-between">
+        <div>
+            <button id="revalueBtn" class="btn btn-secondary me-2">Revalue Portfolio</button>
+            <button id="simulateBtn" class="btn btn-warning">Simulate Market Update</button>
+        </div>
+        <a asp-page="/Index" class="btn btn-link">Back to Dashboard</a>
+    </div>
+
+    <div id="status" class="text-muted">Status: Last revaluation at <span id="lastReval">-</span></div>
+</div>
+
+@section Scripts {
+    @{
+        var camelJson = System.Text.Json.JsonSerializer.Serialize(
+            Model.Portfolio,
+            new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            }
+        );
+    }
+
+    <script>
+        const portfolioData = @Html.Raw(camelJson);
+    </script>
+
+    <script src="~/js/portfolio.js"></script>
+}
