@@ -7,6 +7,8 @@ using System.Text.Json;
 public class PortfolioModel : PageModel
 {
     private readonly IPortfolioService _portfolioService;
+    private readonly IMarketDataService _marketDataService;
+
     private const string DemoUser = "johndoe";
 
     // JSON options for camelCase output
@@ -37,9 +39,10 @@ public class PortfolioModel : PageModel
         ("DIS","Walt Disney Co.")
     };
 
-    public PortfolioModel(IPortfolioService portfolioService)
+    public PortfolioModel(IPortfolioService portfolioService, IMarketDataService marketdataservice)
     {
         _portfolioService = portfolioService;
+        _marketDataService = marketdataservice;
     }
 
     public async Task OnGetAsync()
@@ -92,25 +95,28 @@ public class PortfolioModel : PageModel
         }
     }
 
-    // Revalue portfolio via AJAX
-    public async Task<IActionResult> OnPostRevalueAsync()
+    public async Task<IActionResult> OnPostSimulateAsync()
     {
         try
         {
-            // First call the revaluation endpoint (just updates prices)
+            // 1. Simulate market update
+            await _marketDataService.SimulateAsync();
+
+            // 2. Revalue portfolio
             await _portfolioService.RevalueAsync(DemoUser);
 
-            // Then load updated full portfolio
+            // 3. Return updated portfolio
             var updated = await _portfolioService.GetPortfolioAsync(DemoUser);
 
-            return new JsonResult(updated, CamelCaseOptions);
+            return new JsonResult(new
+            {
+                success = true,
+                portfolio = updated
+            }, CamelCaseOptions);
         }
         catch (Exception ex)
         {
-            return new JsonResult(new { error = ex.Message }, CamelCaseOptions)
-            {
-                StatusCode = 500
-            };
+            return new JsonResult(new { success = false, error = ex.Message });
         }
     }
 

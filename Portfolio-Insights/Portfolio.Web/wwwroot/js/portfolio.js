@@ -8,7 +8,6 @@
 
     const tbody = document.getElementById("portfolioTbody");
     const totalValueEl = document.getElementById("totalValue");
-    const lastRevalEl = document.getElementById("lastReval");
 
     function formatCurrency(v) {
         return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
@@ -97,78 +96,58 @@
         renderTable(updated);
     });
 
-    // revalue
-    document.getElementById("revalueBtn").addEventListener('click', async () => {
-        const btn = document.getElementById("revalueBtn");
-        btn.disabled = true;
-        btn.textContent = "Revaluing...";
-
-        const response = await fetch("/Portfolio?handler=Revalue", {
-            method: 'POST',
-            headers: antiforgery ? { 'RequestVerificationToken': antiforgery } : {}
-        });
-
-        if (!response.ok) {
-            alert('Error revaluing portfolio.');
-            btn.disabled = false;
-            btn.textContent = "Revalue Portfolio";
-            return;
-        }
-
-        const updated = await response.json();
-        renderTable(updated);
-
-        // update last revaluation time
-        const now = new Date();
-        lastRevalEl.textContent = now.toLocaleTimeString();
-
-        btn.disabled = false;
-        btn.textContent = "Revalue Portfolio";
-    });
-
     // simulate market update
-    document.getElementById("simulateBtn").addEventListener("click", async () => {
-        const btn = document.getElementById("simulateBtn");
-        btn.disabled = true;
-        btn.textContent = "Simulating...";
+    const simulateBtn = document.getElementById("simulateBtn");
 
-        const response = await fetch("/Index?handler=Simulate", {
-            method: "POST",
-            headers: antiforgery ? { "RequestVerificationToken": antiforgery } : {}
+    if (simulateBtn) {
+        simulateBtn.addEventListener("click", async () => {
+
+            console.log("👉 CLICK: Simulate Market Update triggered");
+
+            const btn = simulateBtn;
+            btn.disabled = true;
+            btn.textContent = "Simulating...";
+
+            console.log("👉 Sending POST to /Portfolio?handler=Simulate");
+
+            const response = await fetch("/Portfolio?handler=Simulate", {
+                method: "POST",
+                headers: antiforgery ? { "RequestVerificationToken": antiforgery } : {}
+            }).catch(err => {
+                console.error("❌ Network error during fetch:", err);
+                alert("Network error — check console.");
+                btn.disabled = false;
+                btn.textContent = "Simulate Market Update";
+                return null;
+            });
+
+            console.log("👉 Raw response:", response);
+
+            if (!response || !response.ok) {
+                console.error("❌ Response not OK:", response?.status, response?.statusText);
+                alert("Simulation failed: HTTP error. Check console.");
+                btn.disabled = false;
+                btn.textContent = "Simulate Market Update";
+                return;
+            }
+
+            let result;
+            try {
+                result = await response.json();
+                console.log("👉 Parsed JSON:", result);
+
+                // ✅ Render updated portfolio
+                if (result && result.portfolio) {
+                    renderTable(result.portfolio);
+                }
+
+            } catch (e) {
+                console.error("❌ JSON parse error:", e);
+                alert("Simulation returned invalid JSON — check console.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Simulate Market Update";
+            }
         });
-
-        if (!response.ok) {
-            alert("Error simulating market update.");
-            btn.disabled = false;
-            btn.textContent = "Simulate Market Update";
-            return;
-        }
-
-        const result = await response.json();
-
-        if (!result.success) {
-            alert("Simulation failed.");
-            btn.disabled = false;
-            btn.textContent = "Simulate Market Update";
-            return;
-        }
-
-        // Fetch updated portfolio immediately after simulation
-        const updatedResponse = await fetch("/Portfolio?handler=Get", {
-            method: "GET"
-        });
-
-        if (updatedResponse.ok) {
-            const updated = await updatedResponse.json();
-            renderTable(updated);
-            lastRevalEl.textContent = new Date().toLocaleTimeString();
-            alert("Market simulation completed!");
-        } else {
-            alert("Simulation succeeded but could not reload portfolio.");
-        }
-
-        btn.disabled = false;
-        btn.textContent = "Simulate Market Update";
-    });
-
+    }
 });

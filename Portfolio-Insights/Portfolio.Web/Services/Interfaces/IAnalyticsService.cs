@@ -14,5 +14,8 @@ namespace Portfolio.Web.Services.Interfaces
 
         [Get("/analytics-service/api/analytics/{userName}/history")]
         Task<List<PortfolioHistorySnapshotDto>> GetHistoryAsync(string userName);
+
+        [Post("/analytics-service/api/analytics/refresh")]
+        Task<string> RefreshAnalyticsAsync([Body] RefreshAnalyticsRequestDto request);
     }
 }
