@@ -103,7 +103,7 @@ public class PortfolioModel : PageModel
         try
         {
             // 1. Simulate market update
-            await _marketDataService.SimulateAsync();
+            var simulationResult = await _marketDataService.SimulateAsync();
 
             // 2. Revalue portfolio
             await _portfolioService.RevalueAsync(DemoUser);
@@ -111,7 +111,7 @@ public class PortfolioModel : PageModel
             // 3. Fetch latest portfolio
             var portfolio = await _portfolioService.GetPortfolioAsync(DemoUser);
 
-            // 4. Build analytics refresh payload (IDENTICAL to Analytics page)
+            // 4. Refresh analytics
             var refreshRequest = new RefreshAnalyticsRequestDto
             {
                 UserName = DemoUser,
@@ -123,26 +123,21 @@ public class PortfolioModel : PageModel
                 }).ToList()
             };
 
-            // 5. Refresh analytics (THIS WAS MISSING)
             await _analyticsService.RefreshAnalyticsAsync(refreshRequest);
 
-            // 6. Return updated portfolio to the page
+            // 5. Return portfolio + timestamp
             return new JsonResult(new
             {
                 success = true,
-                portfolio
+                portfolio,
+                timestamp = simulationResult.Timestamp
             }, CamelCaseOptions);
         }
         catch (Exception ex)
         {
-            return new JsonResult(new
-            {
-                success = false,
-                error = ex.Message
-            });
+            return new JsonResult(new { success = false, error = ex.Message });
         }
     }
-
     public async Task<IActionResult> OnGetGetAsync()
     {
         var updated = await _portfolioService.GetPortfolioAsync(DemoUser);

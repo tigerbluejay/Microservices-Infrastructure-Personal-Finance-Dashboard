@@ -141,6 +141,10 @@
                     renderTable(result.portfolio);
                 }
 
+                if (result && result.timestamp) {
+                    updateLastSimulatedAt(result.timestamp);
+                }
+
             } catch (e) {
                 console.error("❌ JSON parse error:", e);
                 alert("Simulation returned invalid JSON — check console.");
@@ -149,5 +153,20 @@
                 btn.textContent = "Simulate Market Update";
             }
         });
+    }
+
+    function updateLastSimulatedAt(timestamp) {
+        console.log("updateLastSimulatedAt called with:", timestamp);
+
+        if (!timestamp) return;
+
+        const el = document.getElementById("lastSimulatedAt");
+        if (!el) {
+            console.warn("lastSimulatedAt element NOT FOUND");
+            return;
+        }
+
+        const date = new Date(timestamp);
+        el.textContent = "Last update: " + date.toLocaleString();
     }
 });

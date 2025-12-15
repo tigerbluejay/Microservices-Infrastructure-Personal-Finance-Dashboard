@@ -130,7 +130,7 @@ public class AnalyticsModel : PageModel
     {
         try
         {
-            await _marketDataService.SimulateAsync();
+            var simulationResult = await _marketDataService.SimulateAsync();
             await _portfolioService.RevalueAsync(DemoUser);
 
             var portfolio = await _portfolioService.GetPortfolioAsync(DemoUser);
@@ -150,7 +150,12 @@ public class AnalyticsModel : PageModel
             var analytics = await _analyticsService.GetSummaryAsync(DemoUser);
             var history = await _analyticsService.GetHistoryAsync(DemoUser);
 
-            return new JsonResult(new { analytics, history });
+            return new JsonResult(new
+            {
+                analytics,
+                history,
+                timestamp = simulationResult.Timestamp
+            });
         }
         catch (Exception ex)
         {
