@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Portfolio.Web.Models.Analytics;
 using Portfolio.Web.Models.Portfolio;
 using Portfolio.Web.Services.Interfaces;
 using System.Text.Json;
@@ -8,6 +9,7 @@ public class PortfolioModel : PageModel
 {
     private readonly IPortfolioService _portfolioService;
     private readonly IMarketDataService _marketDataService;
+    private readonly IAnalyticsService _analyticsService;
 
     private const string DemoUser = "johndoe";
 
@@ -39,10 +41,11 @@ public class PortfolioModel : PageModel
         ("DIS","Walt Disney Co.")
     };
 
-    public PortfolioModel(IPortfolioService portfolioService, IMarketDataService marketdataservice)
+    public PortfolioModel(IPortfolioService portfolioService, IMarketDataService marketdataservice, IAnalyticsService analyticsService)
     {
         _portfolioService = portfolioService;
         _marketDataService = marketdataservice;
+        _analyticsService = analyticsService;
     }
 
     public async Task OnGetAsync()
@@ -105,18 +108,38 @@ public class PortfolioModel : PageModel
             // 2. Revalue portfolio
             await _portfolioService.RevalueAsync(DemoUser);
 
-            // 3. Return updated portfolio
-            var updated = await _portfolioService.GetPortfolioAsync(DemoUser);
+            // 3. Fetch latest portfolio
+            var portfolio = await _portfolioService.GetPortfolioAsync(DemoUser);
 
+            // 4. Build analytics refresh payload (IDENTICAL to Analytics page)
+            var refreshRequest = new RefreshAnalyticsRequestDto
+            {
+                UserName = DemoUser,
+                Assets = portfolio.Assets.Select(a => new RefreshAnalyticsAssetDto
+                {
+                    Symbol = a.Symbol,
+                    Quantity = a.Quantity,
+                    CurrentPrice = a.Price
+                }).ToList()
+            };
+
+            // 5. Refresh analytics (THIS WAS MISSING)
+            await _analyticsService.RefreshAnalyticsAsync(refreshRequest);
+
+            // 6. Return updated portfolio to the page
             return new JsonResult(new
             {
                 success = true,
-                portfolio = updated
+                portfolio
             }, CamelCaseOptions);
         }
         catch (Exception ex)
         {
-            return new JsonResult(new { success = false, error = ex.Message });
+            return new JsonResult(new
+            {
+                success = false,
+                error = ex.Message
+            });
         }
     }
 

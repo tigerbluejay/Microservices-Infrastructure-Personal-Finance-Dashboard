@@ -9,10 +9,19 @@ namespace Portfolio.Web.Services.Interfaces
         [Get("/health")]
         Task<string> HealthCheckAsync();
 
+        //[Get("/notification-service/api/notifications/{userName}")]
+        //Task<NotificationListResponseDto> GetNotificationsAsync(
+        //    string userName,
+        //    [Query] bool unread = false
+        //    );
+
         [Get("/notification-service/api/notifications/{userName}")]
         Task<NotificationListResponseDto> GetNotificationsAsync(
             string userName,
-            [Query] bool unread = false
-            );
+            [Query] bool unread
+        );
+
+        [Post("/notification-service/api/notifications/{notificationId}/read")]
+        Task MarkAsReadAsync(Guid notificationId);
     }
 }

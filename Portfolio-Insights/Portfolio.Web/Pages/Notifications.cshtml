@@ -1,0 +1,100 @@
+﻿@page
+@model NotificationsModel
+
+<h2 class="mb-3">Notifications</h2>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link @(Model.View == "all" ? "active" : "")"
+           asp-page="./Notifications"
+           asp-route-View="all">
+            All
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(Model.View == "unread" ? "active" : "")"
+           asp-page="./Notifications"
+           asp-route-View="unread">
+            Unread
+        </a>
+    </li>
+</ul>
+
+@{
+    var notifications = Model.View == "unread"
+        ? Model.UnreadNotifications
+        : Model.AllNotifications;
+}
+
+@if (!notifications.Any())
+{
+    <div class="alert alert-secondary">
+        No new notifications
+    </div>
+}
+else
+{
+    <table class="table table-hover align-middle">
+        <tbody>
+            @foreach (var n in notifications)
+            {
+                <tr class="@(n.IsRead ? "" : "fw-bold")">
+                    <!-- Icon -->
+                    <td style="width: 40px;">
+                        @GetIcon(n.Type)
+                    </td>
+
+                    <!-- Message -->
+                    <td>
+                        <div>@n.Message</div>
+                        <div class="text-muted small">
+                            @RelativeTime(n.CreatedAt)
+                        </div>
+                    </td>
+
+                    <!-- Action -->
+                    <td class="text-end" style="width: 140px;">
+                        @if (!n.IsRead)
+                        {
+                            <form method="post"
+                                  asp-page-handler="MarkAsRead"
+                                  asp-route-id="@n.Id">
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-success">
+                                    ✓ Mark as read
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@functions {
+    string GetIcon(string type) => type switch
+    {
+        "Success" => "🎉",
+        "Warning" => "⚠️",
+        "Info" => "💡",
+        _ => "🔔"
+    };
+
+    string RelativeTime(DateTime createdAt)
+    {
+        var span = DateTime.UtcNow - createdAt.ToUniversalTime();
+
+        if (span.TotalMinutes < 1)
+            return "just now";
+
+        if (span.TotalMinutes < 60)
+            return $"{(int)span.TotalMinutes}m ago";
+
+        if (span.TotalHours < 24)
+            return $"{(int)span.TotalHours}h ago";
+
+        return $"{(int)span.TotalDays}d ago";
+    }
+}
