@@ -190,12 +190,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // Master render
     // -------------------------------
     function renderAll(analytics, history) {
+        if (!analytics || !history || history.length === 0) {
+            console.warn("Analytics not ready — skipping render");
+            return;
+        }
+
         updateMetrics(analytics);
         updatePieChart(analytics.assetContributions || []);
         updateLineChart(history || []);
         updateContribTable(analytics.assetContributions || []);
-        updatedAtEl.textContent = analytics.lastUpdated ? new Date(analytics.lastUpdated).toLocaleString() : new Date().toLocaleString();
-        updateLastSimulatedAt(analytics.lastUpdated);
+        updatedAtEl.textContent =
+            analytics.lastUpdated
+                ? new Date(analytics.lastUpdated).toLocaleString()
+                : new Date().toLocaleString();
     }
 
     // Initial render
