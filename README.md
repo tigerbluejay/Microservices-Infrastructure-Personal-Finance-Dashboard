@@ -110,6 +110,7 @@ Portfolio-Insights/
 - POST /simulate – Simulate market price update
 - GET /logs – Retrieve recent simulation logs
 - GET /lastupdate – Retrieve last update timestamp
+- GET /health - Perform health checks
 
 ### ✅ Portfolio Service
 
@@ -125,7 +126,8 @@ Portfolio-Insights/
 - DELETE /remove-asset
 - GET /get-portfolio
 - GET /get-portfolio-valuation
-
+- GET /health - Perform health checks
+  
 #### Published Events
 
 - PortfolioUpdatedEvent
@@ -143,7 +145,8 @@ Portfolio-Insights/
 - POST /refresh-analytics
 - GET /analytics/by-user
 - GET /analytics/history/by-user
-
+- GET /health - Perform health checks
+  
 #### Consumed Events
 
 - MarketPricesUpdatedEvent
@@ -163,7 +166,8 @@ Portfolio-Insights/
 
 - GET /notifications/by-user
 - POST /mark-as-read
-
+- GET /health - Perform health checks
+  
 #### Consumed Events
 
 - AnalyticsComputedEvent
@@ -217,7 +221,7 @@ This will start:
 
 ### Access the Services
 Service	URL	Description
-- https://localhost:8082}
+- https://localhost:8082
 
 ## 💡 Development Notes
 
@@ -228,3 +232,4 @@ Service	URL	Description
 The project prioritizes architectural clarity over production‑ready UI
 
 This project is intended as a portfolio and learning showcase, demonstrating how modern .NET microservices can be composed, orchestrated, and evolved in a realistic distributed system.
+
