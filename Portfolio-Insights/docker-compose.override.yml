@@ -1,0 +1,144 @@
+services:
+  portfoliodb:
+    container_name: portfoliodb
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=PortfolioDb
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_portfolio:/var/lib/postgresql
+
+
+  analyticsdb:
+    container_name: analyticsdb
+    environment:
+      - SA_PASSWORD=Ab12345678!
+      - ACCEPT_EULA=Y
+    restart: always
+    ports:
+      - "1433:1433"
+
+  messagebroker:
+    container_name: messagebroker
+    hostname: messagebroker
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  distributedcache:
+    container_name: distributedcache
+    restart: always
+    ports:
+      - "6379:6379"
+
+  marketdata-service:
+    container_name: marketdata-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__Redis=distributedcache:6379
+    ports:
+      - "6000:8080"
+      - "6060:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+    depends_on:
+      - messagebroker
+      - distributedcache
+ 
+  portfolio-service:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__Database=Server=portfoliodb;Port=5432;Database=PortfolioDb;User Id=postgres;Password=postgres;Include Error Detail=true
+      - GrpcSettings__MarketDataUrl=https://marketdata-service:8081
+      - MessageBroker__Host=amqp://messagebroker:5672
+      - MessageBroker__UserName=guest
+      - MessageBroker__Password=guest
+    depends_on:
+      - portfoliodb
+      - distributedcache
+      - marketdata-service
+      - messagebroker
+    ports:
+      - "6001:8080"
+      - "6061:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+
+  analytics-api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__AnalyticsDb=Server=analyticsdb,1433;Database=AnalyticsDB;User Id=sa;Password=Ab12345678!;TrustServerCertificate=True;
+      - GrpcSettings__MarketDataUrl=https://marketdata-service:8081
+      - MessageBroker__Host=amqp://messagebroker:5672
+      - MessageBroker__UserName=guest
+      - MessageBroker__Password=guest
+    depends_on:
+      - analyticsdb
+      - messagebroker
+      - marketdata-service
+    ports:
+      - "6002:8080"
+      - "6062:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+  
+  notification-service:
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ASPNETCORE_HTTP_PORTS=8080
+            - ASPNETCORE_HTTPS_PORTS=8081
+            - ApplyMigrationsOnStart=true
+            - ConnectionStrings__NotificationsDb=Data Source=/data/notifications.db
+            - MessageBroker__Host=amqp://messagebroker:5672
+            - MessageBroker__UserName=guest
+            - MessageBroker__Password=guest
+        depends_on:
+            - messagebroker
+            - analytics-api
+        ports:
+            - "6003:8080"
+            - "6063:8081"
+        volumes:
+        - notification_data:/data
+        - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+        - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+        
+  yarpapigateway:
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ASPNETCORE_HTTP_PORTS=8080
+            - ASPNETCORE_HTTPS_PORTS=8081
+        depends_on:
+            - marketdata-service
+            - portfolio-service
+            - analytics-api
+            - notification-service
+        ports:
+            - "6004:8080"
+            - "6064:8081"
+        volumes:
+            - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+            - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  portfolio.web:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ApiSettings__GatewayAddress=http://yarpapigateway:8080
+    ports:
+      - "8082:8080"

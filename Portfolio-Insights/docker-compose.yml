@@ -1,0 +1,57 @@
+services:
+  portfoliodb:
+        image: postgres
+
+  distributedcache:
+        image: redis
+
+  analyticsdb:
+        image: mcr.microsoft.com/mssql/server
+
+  messagebroker:
+        image: rabbitmq:3-management
+  
+  marketdata-service:
+    image: ${DOCKER_REGISTRY-}marketdataservice
+    build:
+      context: .
+      dockerfile: MarketData.Service/Dockerfile
+
+  portfolio-service:
+      image: ${DOCKER_REGISTRY-}portfolioservice
+      build:
+        context: .
+        dockerfile: Portfolio.Service/Dockerfile
+
+  analytics-api:
+      image: ${DOCKER_REGISTRY-}analyticsapi
+      build:
+        context: .
+        dockerfile: Analytics.API/Dockerfile
+
+  notification-service:
+      image: ${DOCKER_REGISTRY-}notificationservice
+      build:
+        context: .
+        dockerfile: Notification.Service/Dockerfile
+      user: root
+      
+  yarpapigateway:
+      container_name: yarpapigateway
+      image: ${DOCKER_REGISTRY-}yarpapigateway
+      build:
+        context: .
+        dockerfile: YarpApiGateway/Dockerfile
+
+  portfolio.web:
+    image: ${DOCKER_REGISTRY-}portfolio.web
+    build:
+      context: .
+      dockerfile: Portfolio.Web/Dockerfile
+    container_name: portfolio-web
+    depends_on:
+      - yarpapigateway
+
+volumes:
+  postgres_portfolio:
+  notification_data:
